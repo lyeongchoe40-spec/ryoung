@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+@layer base {
+  *,
+  ::before,
+  ::after {
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif !important;
+  }
+
+  html,
+  body,
+  #root {
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif !important;
+    letter-spacing: -0.015em;
+  }
+
+  button,
+  input,
+  optgroup,
+  select,
+  textarea {
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif !important;
+  }
+}
+
+@layer utilities {
+  .font-serif-kr,
+  .font-serif,
+  .font-display,
+  .font-sans {
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif !important;
+  }
+}
+
+/* Vintage botanical framed border & accents */
+.botanical-frame {
+  position: relative;
+  background-color: #ffffff;
+  border: 1.5px solid #e7dcce;
+  box-shadow: 0 0 0 4px #faf7f2, 0 0 0 5.5px #e7dcce;
+}
+
+.botanical-card {
+  position: relative;
+  background-color: #fffdfa;
+  border: 1.5px solid #eadfce;
+  border-radius: 1.25rem;
+}
+
+.botanical-card-inner {
+  border: 1px solid #f0e6d8;
+  border-radius: 1rem;
+}
+
+.dotted-line {
+  flex-grow: 1;
+  border-bottom: 1.5px dotted #cfbfad;
+  margin: 0 0.5rem;
+  height: 1px;
+}

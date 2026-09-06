@@ -1,0 +1,6 @@
+{
+  "name": "실업급여팀 직무 스트레스·정서소진 자가점검",
+  "description": "고용센터 실업급여 상담원 정서소진 알아차림 및 마음회복 가이드",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
