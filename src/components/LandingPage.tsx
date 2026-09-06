@@ -1,6 +1,7 @@
 import React from 'react';
 import {
   ArrowRight,
+  ArrowDown,
   ShieldCheck,
   Clock,
   HeartHandshake,
@@ -17,6 +18,7 @@ import {
   PhoneCall,
   Heart,
   Flower2,
+  KeyRound,
 } from 'lucide-react';
 import mascotImg from '../assets/images/refined_calm_companion_1788674125139.jpg';
 import { TabType } from '../types';
@@ -39,8 +41,53 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   onKeyApproved,
   onKeyCleared,
 }) => {
+  const scrollToKeyActivation = (menuName?: string) => {
+    const el = document.getElementById('gemini-activation-wrapper');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el.classList.add('ring-4', 'ring-[#C87D6F]', 'rounded-3xl', 'transition-all');
+      setTimeout(() => {
+        el.classList.remove('ring-4', 'ring-[#C87D6F]');
+      }, 2500);
+    }
+  };
+
   return (
-    <div id="landing-page-root" className="space-y-16 pb-16 font-sans">
+    <div id="landing-page-root" className="space-y-12 pb-16 font-sans">
+      {/* 0. MANDATORY API KEY GATEWAY BANNER (Shown when key is not verified) */}
+      {!isKeyVerified && (
+        <div
+          id="key-gate-notice"
+          className="rounded-2xl bg-[#FFF6F3] border-2 border-[#E8A599] p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm font-serif-kr animate-fade-in"
+        >
+          <div className="flex items-start sm:items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-[#8C3729] text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5 sm:mt-0">
+              <Lock className="w-5 h-5" />
+            </div>
+            <div className="space-y-0.5">
+              <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#FBE6E2] text-[#8C3E30] text-[11px] font-bold">
+                <KeyRound className="w-3 h-3" />
+                필수 승인 단계
+              </div>
+              <h3 className="text-sm sm:text-base font-bold text-[#5A241C]">
+                Gemini API Key 승인 후 검사 시작 및 전체 메뉴 이용이 가능합니다
+              </h3>
+              <p className="text-xs text-[#7A362B]">
+                실업급여 상담원의 정서 보호 및 맞춤 AI 심리 분석을 위해, 아래 인증 카드에서 유효한 Gemini API Key를 등록하고 승인을 완료해 주세요.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => scrollToKeyActivation('API Key 승인')}
+            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#8C3729] hover:bg-[#73291E] text-white text-xs sm:text-sm font-bold transition-all shrink-0 shadow-xs cursor-pointer whitespace-nowrap"
+          >
+            <span>API Key 승인받기</span>
+            <ArrowDown className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
       {/* 1. HERO SECTION: Vintage Botanical Tearoom Parlor Aesthetic */}
       <section
         id="hero-section"
@@ -82,7 +129,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               지친 것은 결코 당신이 나약해서가 아닙니다. 너무 무거운 짐을 제도적 지원 없이 홀로 짊어졌기 때문입니다.
             </p>
 
-            {/* Botanical Dotted Proof Badges (Like the price lists in image) */}
+            {/* Botanical Dotted Proof Badges */}
             <div className="rounded-2xl bg-[#FAF6EE] border border-[#EADBCE] p-4 sm:p-5 space-y-2.5">
               <div className="flex items-center justify-between text-xs sm:text-sm text-[#4E4238]">
                 <span className="flex items-center gap-1.5 font-medium">
@@ -112,28 +159,49 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               </div>
             </div>
 
-            {/* Action Buttons */}
+            {/* Action Buttons - Gated by API Key Verification */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 pt-1">
-              <button
-                type="button"
-                onClick={onStartSurvey}
-                className="inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl text-sm sm:text-base font-bold text-white bg-[#C87D6F] hover:bg-[#B66B5D] transition-all shadow-md hover:shadow-lg cursor-pointer font-serif-kr"
-              >
-                <span>지금 내 마음 상태 알아차리기</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
+              {isKeyVerified ? (
+                <button
+                  type="button"
+                  onClick={onStartSurvey}
+                  className="inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl text-sm sm:text-base font-bold text-white bg-[#C87D6F] hover:bg-[#B66B5D] transition-all shadow-md hover:shadow-lg cursor-pointer font-serif-kr"
+                >
+                  <span>지금 내 마음 상태 알아차리기</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => scrollToKeyActivation('검사 시작')}
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-sm sm:text-base font-bold text-white bg-[#8C3E30] hover:bg-[#783326] transition-all shadow-md cursor-pointer font-serif-kr"
+                >
+                  <Lock className="w-4 h-4" />
+                  <span>API Key 승인 후 검사 시작하기</span>
+                </button>
+              )}
 
               <button
                 type="button"
-                onClick={() => onNavigateTab('practice')}
+                onClick={() => {
+                  if (!isKeyVerified) {
+                    scrollToKeyActivation('회복 수칙');
+                  } else {
+                    onNavigateTab('practice');
+                  }
+                }}
                 className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl text-sm font-semibold text-[#5A4B40] bg-[#FAF6EE] hover:bg-[#F2EADC] border border-[#D8C7B5] transition-colors cursor-pointer font-serif-kr"
               >
-                <Sparkles className="w-4 h-4 text-[#C87D6F]" />
-                <span>25가지 회복 수칙 둘러보기</span>
+                {!isKeyVerified ? (
+                  <Lock className="w-3.5 h-3.5 text-[#8C7564]" />
+                ) : (
+                  <Sparkles className="w-4 h-4 text-[#C87D6F]" />
+                )}
+                <span>25가지 회복 수칙 {!isKeyVerified ? '(승인 필요)' : '둘러보기'}</span>
               </button>
             </div>
 
-            {hasCompleted && (
+            {hasCompleted && isKeyVerified && (
               <div className="inline-flex items-center gap-2 text-xs text-[#2F6131] font-medium bg-[#EAF3EA] px-3.5 py-2 rounded-xl border border-[#BBD7B9]">
                 <CheckCircle2 className="w-4 h-4 text-[#427A45]" />
                 <span>이전에 완료한 자가진단 결과가 보관되어 있습니다.</span>
@@ -147,7 +215,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             )}
           </div>
 
-          {/* Right Companion Card: Ornate Botanical Framed Illustration */}
+          {/* Right Companion Card */}
           <div className="lg:col-span-5">
             <div className="relative rounded-2xl bg-[#FFFDF9] p-5 sm:p-6 border-2 border-[#E7DCCE] shadow-md ring-4 ring-[#FAF6EE] text-[#2C241E] space-y-4">
               <div className="text-center pb-2 border-b border-[#EADBCE]">
@@ -193,8 +261,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         </div>
       </section>
 
-      {/* 1.5. GEMINI API KEY ACTIVATION & APPROVAL SECTION */}
-      <section id="gemini-activation-wrapper">
+      {/* 1.5. GEMINI API KEY ACTIVATION & APPROVAL SECTION (MANDATORY GATEWAY) */}
+      <section id="gemini-activation-wrapper" className="scroll-mt-24">
         <ApiKeyActivationCard
           isVerified={isKeyVerified}
           onKeyApproved={onKeyApproved}
@@ -531,14 +599,25 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         </div>
 
         <div className="text-center pt-2">
-          <button
-            type="button"
-            onClick={onStartSurvey}
-            className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl text-base font-bold text-[#2D2621] bg-[#F5D5CE] hover:bg-[#EAC0B7] transition-all shadow-md cursor-pointer font-serif-kr"
-          >
-            <span>지금 3분 자가점검 시작하기</span>
-            <ArrowRight className="w-4 h-4" />
-          </button>
+          {isKeyVerified ? (
+            <button
+              type="button"
+              onClick={onStartSurvey}
+              className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl text-base font-bold text-[#2D2621] bg-[#F5D5CE] hover:bg-[#EAC0B7] transition-all shadow-md cursor-pointer font-serif-kr"
+            >
+              <span>지금 3분 자가점검 시작하기</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => scrollToKeyActivation('자가점검')}
+              className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl text-base font-bold text-white bg-[#8C3E30] hover:bg-[#783326] transition-all shadow-md cursor-pointer font-serif-kr"
+            >
+              <Lock className="w-4 h-4" />
+              <span>API Key 승인 후 자가점검 시작하기</span>
+            </button>
+          )}
         </div>
       </section>
 
@@ -565,10 +644,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
         <button
           type="button"
-          onClick={() => onNavigateTab('precautions')}
+          onClick={() => {
+            if (!isKeyVerified) {
+              scrollToKeyActivation('운영 및 보호 원칙');
+            } else {
+              onNavigateTab('precautions');
+            }
+          }}
           className="shrink-0 inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-[#2F6131] bg-[#EAF3EA] hover:bg-[#DEECDD] border border-[#BBD7B9] transition-colors shadow-2xs cursor-pointer font-serif-kr"
         >
-          <span>운영 및 보호 원칙 전문 보기</span>
+          {!isKeyVerified && <Lock className="w-3.5 h-3.5 text-[#2F6131]" />}
+          <span>운영 및 보호 원칙 전문 {!isKeyVerified ? '(승인 필요)' : '보기'}</span>
           <ChevronRight className="w-4 h-4" />
         </button>
       </section>
@@ -591,10 +677,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         </div>
         <button
           type="button"
-          onClick={() => onNavigateTab('precautions')}
-          className="shrink-0 px-3.5 py-1.5 rounded-lg bg-[#C87D6F] hover:bg-[#B66B5D] text-white font-bold transition-colors text-[11px] cursor-pointer"
+          onClick={() => {
+            if (!isKeyVerified) {
+              scrollToKeyActivation('위기 상담망');
+            } else {
+              onNavigateTab('precautions');
+            }
+          }}
+          className="shrink-0 px-3.5 py-1.5 rounded-lg bg-[#C87D6F] hover:bg-[#B66B5D] text-white font-bold transition-colors text-[11px] cursor-pointer inline-flex items-center gap-1"
         >
-          위기 상담망 안내
+          {!isKeyVerified && <Lock className="w-3 h-3" />}
+          <span>위기 상담망 안내</span>
         </button>
       </section>
     </div>

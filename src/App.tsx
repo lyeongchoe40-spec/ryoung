@@ -30,6 +30,36 @@ export default function App() {
   const [apiKey, setApiKey] = useState<string>('');
   const [isKeyVerified, setIsKeyVerified] = useState<boolean>(false);
 
+  // Gating: If API key is not verified, strictly lock to landing page
+  useEffect(() => {
+    if (!isKeyVerified && activeTab !== 'landing') {
+      setActiveTab('landing');
+    }
+  }, [isKeyVerified, activeTab]);
+
+  const scrollToKeyActivation = () => {
+    setActiveTab('landing');
+    setTimeout(() => {
+      const el = document.getElementById('gemini-activation-wrapper');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.classList.add('ring-4', 'ring-[#C87D6F]', 'rounded-3xl', 'transition-all');
+        setTimeout(() => {
+          el.classList.remove('ring-4', 'ring-[#C87D6F]');
+        }, 2500);
+      }
+    }, 100);
+  };
+
+  const handleTabChange = (tab: TabType) => {
+    if (!isKeyVerified && tab !== 'landing') {
+      scrollToKeyActivation();
+      return;
+    }
+    setActiveTab(tab);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   // Load saved state on mount
   useEffect(() => {
     try {
@@ -161,14 +191,12 @@ export default function App() {
         {/* Header & Tabs */}
         <Header
           activeTab={activeTab}
-          setActiveTab={(tab) => {
-            setActiveTab(tab);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
+          setActiveTab={handleTabChange}
           hasCompleted={!!result}
           answeredCount={answeredCount}
           totalQuestions={QUESTIONS.length}
           isKeyVerified={isKeyVerified}
+          onLockedTabClick={scrollToKeyActivation}
         />
 
         {/* Main Content Area */}
@@ -177,12 +205,15 @@ export default function App() {
           {activeTab === 'landing' && (
             <LandingPage
               onStartSurvey={() => {
+                if (!isKeyVerified) {
+                  scrollToKeyActivation();
+                  return;
+                }
                 setActiveTab('survey');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
               onNavigateTab={(tab) => {
-                setActiveTab(tab);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+                handleTabChange(tab);
               }}
               hasCompleted={!!result}
               isKeyVerified={isKeyVerified}
@@ -193,6 +224,7 @@ export default function App() {
               onKeyCleared={() => {
                 setApiKey('');
                 setIsKeyVerified(false);
+                setActiveTab('landing');
               }}
             />
           )}

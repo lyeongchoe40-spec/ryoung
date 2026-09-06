@@ -94,14 +94,14 @@ export const ApiKeyActivationCard: React.FC<ApiKeyActivationCardProps> = ({
         <div className="space-y-1">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#F9ECE8] text-[#8C3E30] border border-[#E9C4BC]">
             <KeyRound className="w-3.5 h-3.5 text-[#C87D6F]" />
-            <span>AI 맞춤 정서소진 케어 엔진</span>
+            <span>서비스 이용 필수 인증 단계</span>
             <span className="text-[#C87D6F]">~ ✤ ~</span>
           </div>
           <h3 className="text-lg sm:text-xl font-bold text-[#2C241E]">
-            Gemini API Key 활성화 및 승인
+            Gemini API Key 활성화 및 유효성 승인
           </h3>
           <p className="text-xs sm:text-sm text-[#7A6A5E] leading-relaxed">
-            API Key를 승인하면 일반 자가점검 외에 <strong className="text-[#2C241E]">상담원 맞춤 AI 심리 분석 및 현장 회복 처방</strong>을 무료로 이용할 수 있습니다.
+            API Key 유효성 승인을 완료하셔야 <strong className="text-[#8C3E30]">자가점검 문항지, 분석 리포트, 25가지 회복 수칙</strong> 등 모든 메뉴의 잠금이 해제되고 정상 이용이 가능합니다.
           </p>
         </div>
 
@@ -110,12 +110,12 @@ export const ApiKeyActivationCard: React.FC<ApiKeyActivationCardProps> = ({
           {isVerified ? (
             <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-[#EAF3EA] text-[#2F6131] border border-[#BBD7B9] shadow-2xs">
               <CheckCircle2 className="w-4 h-4 text-[#2F6131]" />
-              <span>승인 완료 (AI 활성화)</span>
+              <span>승인 완료 (전체 메뉴 잠금 해제)</span>
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-[#FAF6EE] text-[#8C7564] border border-[#EADBCE]">
-              <Lock className="w-3.5 h-3.5 text-[#8C7564]" />
-              <span>승인 대기 중</span>
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-[#FAF0ED] text-[#8C3E30] border border-[#E9C4BC]">
+              <Lock className="w-3.5 h-3.5 text-[#8C3E30]" />
+              <span>승인 대기 중 (메뉴 잠김)</span>
             </span>
           )}
         </div>
@@ -193,7 +193,7 @@ export const ApiKeyActivationCard: React.FC<ApiKeyActivationCardProps> = ({
             </button>
 
             <span className="text-xs text-[#7A6A5E]">
-              서버 대 서버 통신으로 브라우저 CORS 오류 없이 즉시 검증됩니다.
+              Google AI Studio 및 Vercel 배포 환경 완벽 지원 (이중 통신 엔진 적용)
             </span>
           </div>
         </form>
