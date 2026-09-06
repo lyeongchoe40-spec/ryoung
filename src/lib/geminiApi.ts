@@ -86,13 +86,19 @@ async function verifyWithGoogleDirect(apiKey: string): Promise<VerifyKeyResponse
 /**
  * Direct Google Gemini content generation fallback
  * Used when running on Vercel static hosting or when /api route is not available.
- * Tries modern Flash models in order.
+ * Tries modern supported Flash models in order (gemini-3.8-flash, 3.7-flash, 3.6-flash, flash-latest, 3.5-flash).
  */
 async function generateAiCounselorAdviceDirect(
   apiKey: string,
   prompt: string
 ): Promise<AiCounselorResponse> {
-  const candidateModels = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-2.0-flash'];
+  const candidateModels = [
+    'gemini-3.7-flash',
+    'gemini-3.6-flash',
+    'gemini-flash-latest',
+    'gemini-3.8-flash',
+    'gemini-3.5-flash',
+  ];
   let lastError = '';
 
   for (const model of candidateModels) {
@@ -111,33 +117,50 @@ async function generateAiCounselorAdviceDirect(
           ],
           generationConfig: {
             temperature: 0.7,
-            maxOutputTokens: 1024,
+            maxOutputTokens: 2048,
           },
         }),
       });
 
       const data = await response.json().catch(() => ({}));
+      const parts = data?.candidates?.[0]?.content?.parts || [];
+      const extractedText = parts
+        .map((p: { text?: string }) => p.text || '')
+        .join('')
+        .trim();
 
-      if (response.ok && data?.candidates?.[0]?.content?.parts?.[0]?.text) {
+      if (response.ok && extractedText) {
         return {
           success: true,
-          advice: data.candidates[0].content.parts[0].text,
+          advice: extractedText,
         };
       }
 
       if (!response.ok) {
         lastError = data?.error?.message || `HTTP ${response.status}`;
-        if (response.status === 404) {
-          // Model not found, try next candidate model
+        
+        // If the error is model availability / deprecation / temporary 503, try next candidate model
+        const isModelIssue =
+          response.status === 404 ||
+          response.status === 503 ||
+          response.status === 500 ||
+          lastError.includes('no longer available') ||
+          lastError.includes('not found') ||
+          lastError.includes('is not supported') ||
+          lastError.includes('overloaded');
+
+        if (isModelIssue) {
+          console.warn(`[Gemini API Direct] Model ${model} unavailable (${lastError}), trying next candidate...`);
           continue;
         }
-        if (response.status === 400 || response.status === 403 || response.status === 429) {
-          // Hard auth/quota failure, stop
+
+        // Hard auth / quota failure (invalid key or rate limit)
+        if (response.status === 401 || response.status === 403 || response.status === 429) {
           break;
         }
       }
     } catch (err) {
-      console.warn(`[Gemini API Direct] Model ${model} request error, trying next...`, err);
+      console.warn(`[Gemini API Direct] Model ${model} network error, trying next...`, err);
     }
   }
 

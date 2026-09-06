@@ -55,22 +55,44 @@ async function startServer() {
     try {
       // Ephemeral in-memory client initialization (never saved to database or file system)
       const ai = new GoogleGenAI({ apiKey: trimmedKey });
+      const verifyModels = ['gemini-3.7-flash', 'gemini-3.6-flash', 'gemini-flash-latest', 'gemini-3.8-flash'];
+      let verified = false;
+      let lastErr: unknown = null;
 
-      // Fast, lightweight verification ping using gemini-3.8-flash with 1 token
-      const response = await ai.models.generateContent({
-        model: 'gemini-3.8-flash',
-        contents: '연결 확인',
-        config: {
-          maxOutputTokens: 3,
-          temperature: 0.1,
-        },
-      });
+      for (const m of verifyModels) {
+        try {
+          const response = await ai.models.generateContent({
+            model: m,
+            contents: 'Ping',
+            config: {
+              thinkingConfig: { thinkingBudget: 0 },
+              maxOutputTokens: 20,
+              temperature: 0.1,
+            },
+          });
 
-      if (response && response.text !== undefined) {
+          if (response && (response.text || response.candidates?.length)) {
+            verified = true;
+            break;
+          }
+        } catch (mErr) {
+          lastErr = mErr;
+          const msg = mErr instanceof Error ? mErr.message : String(mErr);
+          if (msg.includes('API_KEY_INVALID') || msg.includes('API key not valid') || msg.includes('401')) {
+            break; // No need to try other models for invalid API key
+          }
+        }
+      }
+
+      if (verified) {
         return res.json({
           valid: true,
           message: 'Gemini API Key가 성공적으로 검증 및 승인되었습니다.',
         });
+      }
+
+      if (lastErr) {
+        throw lastErr;
       }
 
       return res.status(500).json({
@@ -130,18 +152,51 @@ async function startServer() {
 
     try {
       const ai = new GoogleGenAI({ apiKey: effectiveKey });
+      const geminiModels = ['gemini-3.7-flash', 'gemini-3.6-flash', 'gemini-flash-latest', 'gemini-3.8-flash'];
+      let outputText: string | undefined;
+      let lastErr: unknown = null;
 
-      const response = await ai.models.generateContent({
-        model: 'gemini-3.8-flash',
-        contents: prompt,
-        config: {
-          systemInstruction: systemInstruction || '당신은 고용센터 실업급여팀 상담원의 극심한 직무 스트레스와 정서소진을 보듬고 공감하며 실무적인 대응 방안을 조언하는 따뜻하고 전문적인 심리 회복 멘토입니다.',
-          temperature: 0.7,
-        },
-      });
+      for (const modelName of geminiModels) {
+        try {
+          const response = await ai.models.generateContent({
+            model: modelName,
+            contents: prompt,
+            config: {
+              systemInstruction:
+                systemInstruction ||
+                '당신은 고용센터 실업급여팀 상담원의 극심한 직무 스트레스와 정서소진을 보듬고 공감하며 실무적인 대응 방안을 조언하는 따뜻하고 전문적인 심리 회복 멘토입니다.',
+              temperature: 0.7,
+            },
+          });
 
-      return res.json({
-        text: response.text,
+          if (response && response.text) {
+            outputText = response.text;
+            break;
+          }
+        } catch (mErr) {
+          lastErr = mErr;
+          const msg = mErr instanceof Error ? mErr.message : String(mErr);
+          if (msg.includes('RESOURCE_EXHAUSTED') || msg.includes('429')) {
+            return res.status(429).json({
+              error: 'API 요청 한도를 초과했습니다. 잠시 후 다시 시도해 주세요.',
+            });
+          }
+          console.warn(`[server.ts] Model ${modelName} request failed, trying next candidate...`, msg);
+        }
+      }
+
+      if (outputText) {
+        return res.json({
+          text: outputText,
+        });
+      }
+
+      if (lastErr) {
+        throw lastErr;
+      }
+
+      return res.status(500).json({
+        error: 'AI 응답을 생성하지 못했습니다. 잠시 후 다시 시도해 주세요.',
       });
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : String(err);
